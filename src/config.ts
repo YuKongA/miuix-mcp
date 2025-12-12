@@ -11,10 +11,7 @@ args.forEach((arg) => {
   }
 });
 
-const isDev = process.env.NODE_ENV === "development";
-const defaultUrl = isDev
-  ? "http://localhost:5173/miuix/"
-  : "https://compose-miuix-ui.github.io/miuix";
+const defaultUrl = "https://compose-miuix-ui.github.io/miuix";
 
 const envSchema = z.object({
   MIUIX_DOCS_URL: z.string().default(defaultUrl),
