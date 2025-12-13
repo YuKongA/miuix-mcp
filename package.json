@@ -1,5 +1,5 @@
 {
-  "name": "miuix-cmp",
+  "name": "miuix-mcp",
   "module": "src/index.ts",
   "type": "module",
   "scripts": {

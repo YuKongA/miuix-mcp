@@ -8,7 +8,7 @@ const memory = new Map<string, CacheEntry<any>>();
 const CACHE_DIR = path.join(process.cwd(), ".cache", "miuix-mcp");
 
 function ensureDir() {
-  try { fs.mkdirSync(CACHE_DIR, { recursive: true }); } catch {}
+  try { fs.mkdirSync(CACHE_DIR, { recursive: true }); } catch { }
 }
 
 function keyToFile(key: string) {
@@ -28,7 +28,7 @@ function readDisk<T>(key: string): CacheEntry<T> | null {
 }
 
 function writeDisk<T>(key: string, entry: CacheEntry<T>) {
-  try { ensureDir(); fs.writeFileSync(keyToFile(key), JSON.stringify(entry)); } catch {}
+  try { ensureDir(); fs.writeFileSync(keyToFile(key), JSON.stringify(entry)); } catch { }
 }
 
 export async function cached<T>(key: string, ttlMs: number, fetcher: () => Promise<T>): Promise<T> {

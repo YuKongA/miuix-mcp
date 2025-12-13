@@ -44,11 +44,35 @@
 
 ## 可用工具
 
+### 基础与版本
+
 - `get_latest_version` 获取 miuix 库最新发布版本（GitHub Releases）
+- `get_gradle_dependency` 获取 Gradle 依赖配置代码片段（支持 KMP、Android 及其他单平台）
+
+### 组件文档与示例
+
 - `get_all_components` 列出所有组件（解析文档 `/components/` 页面）
 - `search_components` 按名称检索组件（基于 `get_all_components`）
 - `get_component_doc` 获取指定组件的 Markdown 文档
 - `get_component_demo` 获取指定组件的示例 Kotlin 代码
+
+### 开发指南
+
+- `get_quick_start_doc` 获取“快速开始”指南
+- `get_theme_doc` 获取“主题”指南
+- `get_text_styles_doc` 获取“文本样式”指南
+- `get_icons_doc` 获取“图标”指南
+- `get_utils_doc` 获取“工具类”指南
+- `get_multiplatform_doc` 获取“多平台支持”指南
+
+### API 参考 (Dokka)
+
+- `list_dokka_packages` 列出 Dokka API 文档中的所有包
+- `list_dokka_package_items` 列出指定包中的类、函数与属性
+- `search_dokka` 搜索 Dokka API 文档中的包与符号
+
+### 示例工程
+
 - `list_example_tree` 递归列出仓库 `example/` 目录树
 - `list_example_path` 列出 `example/` 子路径下的文件与目录
 - `get_example_file` 获取指定示例文件源码文本
@@ -61,6 +85,8 @@
   - `latestRelease` 6 小时
   - `components` 2 小时
   - `componentDoc`/`componentDemo` 12 小时
+  - `guideDoc` 12 小时
+  - `dokkaPackages`/`dokkaPackageSymbols`/`dokkaClassMembers` 6 小时
   - `examplePath` 2 小时
   - `exampleFile` 24 小时
   - `exampleTree` 6 小时

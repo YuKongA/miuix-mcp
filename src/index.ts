@@ -5,8 +5,8 @@ import { config } from "./config.js";
 import { registerTools } from "./tools.js";
 
 const server = new McpServer({
-  name: "miuix-cmp",
-  version: "1.0.1",
+  name: "miuix-mcp",
+  version: "1.0.2",
 });
 
 registerTools(server);
