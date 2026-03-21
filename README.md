@@ -1,6 +1,6 @@
 # miuix-mcp
 
-一个基于 Model Context Protocol (MCP) 的 `stdio` 服务器，用于检索 Miuix 组件文档、示例代码与示例工程目录。适用于支持 MCP 的客户端。
+一个基于 Model Context Protocol (MCP) 的 `stdio` 服务器，用于检索 Miuix 组件文档、示例代码、示例工程目录与 Dokka API。适用于支持 MCP 的客户端。
 
 ## 快速开始
 
@@ -30,7 +30,7 @@
       "command": "bun",
       "args": [
         "run",
-        "path/miuix-mcp/src"
+        "path/miuix-mcp/src/index.ts"
       ]
     }
   }
@@ -47,7 +47,7 @@
 ### 基础与版本
 
 - `get_latest_version` 获取 miuix 库最新发布版本（GitHub Releases）
-- `get_gradle_dependency` 获取 Gradle 依赖配置代码片段（支持 KMP、Android 及其他单平台）
+- `get_gradle_dependency` 获取 Gradle 依赖配置代码片段（支持 `miuix`、`miuix-icons`、`miuix-navigation3-ui` 以及 KMP、Android 和其他单平台）
 
 ### 组件文档与示例
 
@@ -58,12 +58,17 @@
 
 ### 开发指南
 
+- `list_guides` 列出所有 guide 页面
+- `get_guide_doc` 按 slug 获取 guide 文档
 - `get_quick_start_doc` 获取“快速开始”指南
 - `get_theme_doc` 获取“主题”指南
+- `get_colors_doc` 获取“颜色系统”指南
 - `get_text_styles_doc` 获取“文本样式”指南
 - `get_icons_doc` 获取“图标”指南
 - `get_utils_doc` 获取“工具类”指南
+- `get_navigation3_doc` 获取“Navigation3 支持”指南
 - `get_multiplatform_doc` 获取“多平台支持”指南
+- `get_best_practices_doc` 获取“最佳实践”指南
 
 ### API 参考 (Dokka)
 
