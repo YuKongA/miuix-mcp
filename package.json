@@ -4,14 +4,13 @@
   "type": "module",
   "scripts": {
     "start": "bun run src/index.ts",
-    "dev": "NODE_ENV=development bun run src/index.ts"
+    "dev": "NODE_ENV=development bun run src/index.ts",
+    "typecheck": "tsc --noEmit"
   },
   "private": true,
   "devDependencies": {
-    "@types/bun": "latest"
-  },
-  "peerDependencies": {
-    "typescript": "^5"
+    "@types/bun": "latest",
+    "typescript": "^5.9.3"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.24.3",

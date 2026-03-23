@@ -6,7 +6,7 @@ import { registerTools } from "./tools.js";
 
 const server = new McpServer({
   name: "miuix-mcp",
-  version: "1.0.2",
+  version: "1.0.3",
 });
 
 registerTools(server);
@@ -16,6 +16,7 @@ async function main() {
   await server.connect(transport);
   console.error("Miuix MCP Server running on stdio");
   console.error(`Using Miuix Docs URL: ${config.MIUIX_DOCS_URL}`);
+  console.error("Using Miuix source: GitHub default branch");
 }
 
 main().catch((error) => {
