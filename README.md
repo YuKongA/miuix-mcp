@@ -66,7 +66,7 @@
 - `get_text_styles_doc` 获取“文本样式”指南
 - `get_icons_doc` 获取“图标”指南
 - `get_utils_doc` 获取“工具类”指南
-- `get_navigation3_doc` 获取“Navigation3 支持”指南
+- `get_miuix_nav_doc` 获取“miuix-nav 导航”指南
 - `get_multiplatform_doc` 获取“多平台支持”指南
 - `get_best_practices_doc` 获取“最佳实践”指南
 

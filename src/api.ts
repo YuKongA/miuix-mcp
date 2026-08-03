@@ -376,8 +376,8 @@ export async function fetchUtilsGuide(locale?: string): Promise<string> {
   return await fetchGuideDoc("utils", locale);
 }
 
-export async function fetchNavigation3Guide(locale?: string): Promise<string> {
-  return await fetchGuideDoc("navigation3", locale);
+export async function fetchMiuixNavGuide(locale?: string): Promise<string> {
+  return await fetchGuideDoc("miuix-nav", locale);
 }
 
 export async function fetchMultiplatformGuide(locale?: string): Promise<string> {
@@ -761,7 +761,7 @@ export async function fetchDokkaPackages(platform?: DokkaPlatform): Promise<Arra
     const html = await response.text();
     const base = dokkaBase().replace(/\/+$/, "");
     const results: Array<{ name: string; url: string; platform?: string }> = [];
-    const anchorRegex = /<a href="(miuix\/top\.yukonga\.miuix\.kmp\.[^"]+\/index\.html)">([^<]+)<\/a>/g;
+    const anchorRegex = /<a href="((?:miuix|miuix-ui)\/top\.yukonga\.miuix\.kmp\.[^"]+\/index\.html)">([^<]+)<\/a>/g;
     let match: RegExpExecArray | null;
     while ((match = anchorRegex.exec(html)) !== null) {
       const href = match[1] || "";

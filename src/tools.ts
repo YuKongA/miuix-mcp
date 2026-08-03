@@ -15,7 +15,7 @@ import {
   fetchIconsGuide,
   fetchLatestRelease,
   fetchMultiplatformGuide,
-  fetchNavigation3Guide,
+  fetchMiuixNavGuide,
   fetchQuickStartDoc,
   fetchTextStylesGuide,
   fetchThemeGuide,
@@ -208,7 +208,7 @@ export function registerTools(server: McpServer) {
   server.registerTool(
     "get_guide_doc",
     {
-      description: "Get a guide page by slug, e.g. 'getting-started', 'colors', or 'navigation3'.",
+      description: "Get a guide page by slug, e.g. 'getting-started', 'colors', or 'miuix-nav'.",
       inputSchema: z.object({
         page: z.string().describe("Guide slug or relative path without extension."),
         locale: localeSchema,
@@ -314,14 +314,14 @@ export function registerTools(server: McpServer) {
   );
 
   server.registerTool(
-    "get_navigation3_doc",
+    "get_miuix_nav_doc",
     {
-      description: "Get the Navigation3 Support guide markdown.",
+      description: "Get the miuix-nav navigation guide markdown.",
       inputSchema: z.object({ locale: localeSchema }),
     },
     async ({ locale }) => {
       try {
-        return toText(await fetchNavigation3Guide(locale));
+        return toText(await fetchMiuixNavGuide(locale));
       } catch (error) {
         return toError(error);
       }
