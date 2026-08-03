@@ -376,8 +376,8 @@ export async function fetchUtilsGuide(locale?: string): Promise<string> {
   return await fetchGuideDoc("utils", locale);
 }
 
-export async function fetchNavigation3Guide(locale?: string): Promise<string> {
-  return await fetchGuideDoc("navigation3", locale);
+export async function fetchMiuixNavGuide(locale?: string): Promise<string> {
+  return await fetchGuideDoc("miuix-nav", locale);
 }
 
 export async function fetchMultiplatformGuide(locale?: string): Promise<string> {
