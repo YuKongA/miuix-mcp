@@ -26,7 +26,7 @@ import {
 
 const localeSchema = z.enum(["en", "zh_CN"]).optional().describe("Docs locale, default 'en'");
 const platformSchema = z.enum(["kmp", "android", "desktop", "iosarm64", "iosx64", "iossimulatorarm64", "macosx64", "macosarm64", "wasmjs", "js"]).optional().describe("Target platform. Default 'kmp'.");
-const artifactSchema = z.enum(["miuix", "miuix-icons", "miuix-navigation3-ui"]);
+const artifactSchema = z.enum(["miuix-ui", "miuix-preference", "miuix-icons", "miuix-blur", "miuix-squircle", "miuix-nav"]);
 
 export function registerTools(server: McpServer) {
   const toText = (text: string) => ({ content: [{ type: "text" as const, text }] });
@@ -54,18 +54,21 @@ export function registerTools(server: McpServer) {
   server.registerTool(
     "get_gradle_dependency",
     {
-      description: "Get Gradle dependency snippets for miuix, miuix-icons, and miuix-navigation3-ui.",
+      description: "Get Gradle dependency snippets for miuix-ui, miuix-preference, miuix-icons, miuix-blur, miuix-squircle, and miuix-nav.",
       inputSchema: z.object({
-        version: z.string().optional().describe("Optional version override, e.g. '0.8.0'."),
+        version: z.string().optional().describe("Optional version override, e.g. '0.9.4'. A leading 'v' is accepted."),
         platform: platformSchema,
-        artifacts: z.array(artifactSchema).min(1).optional().describe("Artifacts to include. Default ['miuix']."),
+        artifacts: z.array(artifactSchema).min(1).optional().describe("Artifacts to include. Default ['miuix-ui']."),
       }),
     },
     async ({ version, platform, artifacts }) => {
       try {
-        const resolvedVersion = version && version.trim().length > 0 ? version.trim() : await fetchLatestRelease();
+        const resolvedVersion = (version && version.trim().length > 0 ? version.trim() : await fetchLatestRelease()).replace(/^v/, "");
         const resolvedPlatform = platform ?? "kmp";
-        const resolvedArtifacts = artifacts && artifacts.length > 0 ? artifacts : ["miuix"];
+        const resolvedArtifacts = artifacts && artifacts.length > 0 ? artifacts : ["miuix-ui"];
+
+        // The wasm artifact is published as "-wasm-js".
+        const artifactSuffix = resolvedPlatform === "wasmjs" ? "wasm-js" : resolvedPlatform;
 
         const dependencyLine = (artifact: string) => {
           if (resolvedPlatform === "kmp") {
@@ -74,10 +77,8 @@ export function registerTools(server: McpServer) {
           if (resolvedPlatform === "android") {
             return `    implementation("top.yukonga.miuix.kmp:${artifact}-android:${resolvedVersion}")`;
           }
-          return `implementation("top.yukonga.miuix.kmp:${artifact}-${resolvedPlatform}:${resolvedVersion}")`;
+          return `implementation("top.yukonga.miuix.kmp:${artifact}-${artifactSuffix}:${resolvedVersion}")`;
         };
-
-        const needsNavigationRuntime = resolvedArtifacts.includes("miuix-navigation3-ui");
 
         if (resolvedPlatform === "kmp") {
           const lines = [
@@ -85,7 +86,6 @@ export function registerTools(server: McpServer) {
             "    sourceSets {",
             "        commonMain.dependencies {",
             ...resolvedArtifacts.map(dependencyLine),
-            ...(needsNavigationRuntime ? ['            implementation("androidx.navigation3:navigation3-runtime:<navigation3-version>")'] : []),
             "        }",
             "    }",
             "}",
@@ -97,17 +97,12 @@ export function registerTools(server: McpServer) {
           const lines = [
             "dependencies {",
             ...resolvedArtifacts.map(dependencyLine),
-            ...(needsNavigationRuntime ? ['    implementation("androidx.navigation3:navigation3-runtime:<navigation3-version>")'] : []),
             "}",
           ];
           return toText(lines.join("\n"));
         }
 
-        const lines = [
-          ...resolvedArtifacts.map(dependencyLine),
-          ...(needsNavigationRuntime ? ['implementation("androidx.navigation3:navigation3-runtime:<navigation3-version>")'] : []),
-        ];
-        return toText(lines.join("\n"));
+        return toText(resolvedArtifacts.map(dependencyLine).join("\n"));
       } catch (error) {
         return toError(error);
       }

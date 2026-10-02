@@ -47,7 +47,7 @@
 ### 基础与版本
 
 - `get_latest_version` 获取 miuix 库最新发布版本（GitHub Releases）
-- `get_gradle_dependency` 获取 Gradle 依赖配置代码片段（支持 `miuix`、`miuix-icons`、`miuix-navigation3-ui` 以及 KMP、Android 和其他单平台）
+- `get_gradle_dependency` 获取 Gradle 依赖配置代码片段（支持 `miuix-ui`、`miuix-preference`、`miuix-icons`、`miuix-blur`、`miuix-squircle`、`miuix-nav` 以及 KMP、Android 和其他单平台）
 
 ### 组件文档与示例
 
