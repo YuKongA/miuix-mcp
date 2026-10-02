@@ -476,6 +476,23 @@ function extractSignatureParams(signature: string, symbolName: string): Array<{ 
   return params;
 }
 
+// Dokka tags rows with comma-separated source sets (e.g. ":miuix-ui/commonMain,:miuix-ui/androidMain");
+// suffix-match so both the legacy ":miuix/..." and the current ":miuix-ui/..." module prefixes work.
+const DOKKA_PLATFORM_SOURCE_SETS: Record<DokkaPlatform, string[]> = {
+  common: ["commonMain"],
+  android: ["androidMain"],
+  desktop: ["desktopMain", "skikoMain"],
+  ios: ["iosMain", "skikoMain"],
+  js: ["jsMain", "skikoMain"],
+  macos: ["macosMain", "skikoMain"],
+  wasmJs: ["wasmJsMain", "skikoMain"],
+};
+
+function matchesDokkaPlatform(tag: string, platform: DokkaPlatform): boolean {
+  const sourceSets = DOKKA_PLATFORM_SOURCE_SETS[platform];
+  return tag.split(",").some((entry) => sourceSets.some((sourceSet) => entry.trim().endsWith(`/${sourceSet}`)));
+}
+
 export async function fetchDokkaPackageSymbols(packageName: string, platform?: DokkaPlatform): Promise<DokkaSymbol[]> {
   const packages = await fetchDokkaPackages(platform);
   const pkg = packages.find((item) => item.name === packageName);
@@ -483,7 +500,7 @@ export async function fetchDokkaPackageSymbols(packageName: string, platform?: D
     throw new Error(`Package "${packageName}" not found in Dokka index`);
   }
 
-  const key = `dokkaPackageSymbols@${pkg.url}@${platform || "all"}`;
+  const key = `dokkaPackageSymbols@${pkg.url}@${platform || "all"}@v2`;
   return cached<DokkaSymbol[]>(key, 6 * 60 * 60 * 1000, async () => {
     const response = await fetch(pkg.url);
     if (!response.ok) {
@@ -491,16 +508,6 @@ export async function fetchDokkaPackageSymbols(packageName: string, platform?: D
     }
 
     const html = await response.text();
-    const platformMap: Record<DokkaPlatform, string> = {
-      common: ":miuix/commonMain",
-      android: ":miuix/androidMain",
-      desktop: ":miuix/desktopMain",
-      ios: ":miuix/iosMain",
-      js: ":miuix/jsMain",
-      macos: ":miuix/macosMain",
-      wasmJs: ":miuix/wasmJsMain",
-    };
-    const platformFilter = platform ? platformMap[platform] : undefined;
     const results: DokkaSymbol[] = [];
 
     const getSectionTable = (name: "TYPE" | "PROPERTY" | "FUNCTION"): string => {
@@ -570,7 +577,7 @@ export async function fetchDokkaPackageSymbols(packageName: string, platform?: D
           || /data-togglable="([^"]+)"/.exec(windowHtml);
         const platformTag = platformTagMatch?.[1] ?? "";
 
-        if (platformFilter && platformTag && platformTag !== platformFilter) {
+        if (platform && platformTag && !matchesDokkaPlatform(platformTag, platform)) {
           continue;
         }
 
@@ -646,7 +653,7 @@ export async function fetchDokkaPackageSymbols(packageName: string, platform?: D
           || /data-filterable-set="([^"]+)"/.exec(windowHtml)
           || /data-togglable="([^"]+)"/.exec(windowHtml);
         const platformTag = platformTagMatch?.[1] ?? "";
-        if (platformFilter && platformTag && platformTag !== platformFilter) continue;
+        if (platform && platformTag && !matchesDokkaPlatform(platformTag, platform)) continue;
 
         const url = href.startsWith("http")
           ? href
@@ -796,7 +803,7 @@ export async function fetchDokkaClassMembers(typeUrl: string, platform?: DokkaPl
   functions: Array<{ name: string; url: string; platform?: string; signature?: string; params?: Array<{ name: string; type: string; default?: string }> }>;
   properties: Array<{ name: string; url: string; platform?: string; signature?: string }>;
 }> {
-  const key = `dokkaClassMembers@${typeUrl}@${platform || "all"}@v3`;
+  const key = `dokkaClassMembers@${typeUrl}@${platform || "all"}@v4`;
   return cached(key, 6 * 60 * 60 * 1000, async () => {
     const response = await fetch(typeUrl);
     if (!response.ok) {
@@ -807,16 +814,6 @@ export async function fetchDokkaClassMembers(typeUrl: string, platform?: DokkaPl
     }
 
     const html = await response.text();
-    const platformMap: Record<DokkaPlatform, string> = {
-      common: ":miuix/commonMain",
-      android: ":miuix/androidMain",
-      desktop: ":miuix/desktopMain",
-      ios: ":miuix/iosMain",
-      js: ":miuix/jsMain",
-      macos: ":miuix/macosMain",
-      wasmJs: ":miuix/wasmJsMain",
-    };
-    const platformFilter = platform ? platformMap[platform] : undefined;
     const constructors: Array<{ name: string; url: string; platform?: string; signature?: string; params?: Array<{ name: string; type: string; default?: string }> }> = [];
     const functions: Array<{ name: string; url: string; platform?: string; signature?: string; params?: Array<{ name: string; type: string; default?: string }> }> = [];
     const properties: Array<{ name: string; url: string; platform?: string; signature?: string }> = [];
@@ -847,7 +844,7 @@ export async function fetchDokkaClassMembers(typeUrl: string, platform?: DokkaPl
         || /data-filterable-set="([^"]+)"/.exec(windowHtml)
         || /data-togglable="([^"]+)"/.exec(windowHtml);
       const platformTag = platformTagMatch?.[1] ?? "";
-      if (platformFilter && platformTag && platformTag !== platformFilter) continue;
+      if (platform && platformTag && !matchesDokkaPlatform(platformTag, platform)) continue;
 
       const url = href.startsWith("http") ? href : new URL(href, typeUrl).toString();
 
