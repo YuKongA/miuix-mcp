@@ -25,7 +25,7 @@ import {
 } from "./api.js";
 
 const localeSchema = z.enum(["en", "zh_CN"]).optional().describe("Docs locale, default 'en'");
-const platformSchema = z.enum(["kmp", "android", "desktop", "iosarm64", "iosx64", "iossimulatorarm64", "macosx64", "macosarm64", "wasmjs", "js"]).optional().describe("Target platform. Default 'kmp'.");
+const platformSchema = z.enum(["kmp", "android", "desktop", "iosarm64", "iossimulatorarm64", "macosarm64", "wasmjs", "js"]).optional().describe("Target platform. Default 'kmp'.");
 const artifactSchema = z.enum(["miuix-ui", "miuix-preference", "miuix-icons", "miuix-blur", "miuix-squircle", "miuix-nav"]);
 
 export function registerTools(server: McpServer) {
