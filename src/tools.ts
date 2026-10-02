@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import {
   fetchBestPracticesGuide,
+  fetchBlurGuide,
   fetchColorsGuide,
   fetchComponentDemo,
   fetchComponentDoc,
@@ -17,6 +18,7 @@ import {
   fetchMultiplatformGuide,
   fetchMiuixNavGuide,
   fetchQuickStartDoc,
+  fetchSquircleGuide,
   fetchTextStylesGuide,
   fetchThemeGuide,
   fetchUtilsGuide,
@@ -354,16 +356,44 @@ export function registerTools(server: McpServer) {
   );
 
   server.registerTool(
+    "get_blur_doc",
+    {
+      description: "Get the Blur Effects guide markdown.",
+      inputSchema: z.object({ locale: localeSchema }),
+    },
+    async ({ locale }) => {
+      try {
+        return toText(await fetchBlurGuide(locale));
+      } catch (error) {
+        return toError(error);
+      }
+    }
+  );
+
+  server.registerTool(
+    "get_squircle_doc",
+    {
+      description: "Get the Squircle Shapes guide markdown.",
+      inputSchema: z.object({ locale: localeSchema }),
+    },
+    async ({ locale }) => {
+      try {
+        return toText(await fetchSquircleGuide(locale));
+      } catch (error) {
+        return toError(error);
+      }
+    }
+  );
+
+  server.registerTool(
     "list_dokka_packages",
     {
       description: "List packages from the online Dokka API docs.",
-      inputSchema: z.object({
-        platform: z.enum(["common", "android", "desktop", "ios", "js", "macos", "wasmJs"]).optional().describe("Filter by platform, default all."),
-      }),
+      inputSchema: z.object({}),
     },
-    async ({ platform }) => {
+    async () => {
       try {
-        return toJsonText(await fetchDokkaPackages(platform));
+        return toJsonText(await fetchDokkaPackages());
       } catch (error) {
         return toError(error);
       }

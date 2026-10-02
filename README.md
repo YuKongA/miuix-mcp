@@ -69,6 +69,8 @@
 - `get_miuix_nav_doc` 获取“miuix-nav 导航”指南
 - `get_multiplatform_doc` 获取“多平台支持”指南
 - `get_best_practices_doc` 获取“最佳实践”指南
+- `get_blur_doc` 获取“模糊效果”指南
+- `get_squircle_doc` 获取“平滑圆角”指南
 
 ### API 参考 (Dokka)
 

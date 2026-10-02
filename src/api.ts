@@ -388,6 +388,14 @@ export async function fetchBestPracticesGuide(locale?: string): Promise<string> 
   return await fetchGuideDoc("best-practices", locale);
 }
 
+export async function fetchBlurGuide(locale?: string): Promise<string> {
+  return await fetchGuideDoc("blur", locale);
+}
+
+export async function fetchSquircleGuide(locale?: string): Promise<string> {
+  return await fetchGuideDoc("squircle", locale);
+}
+
 function dokkaIndexUrl(): string {
   const base = String(config.MIUIX_DOCS_URL || "").replace(/\/+$/, "");
   return `${base}/dokka/index.html`;
@@ -494,7 +502,7 @@ function matchesDokkaPlatform(tag: string, platform: DokkaPlatform): boolean {
 }
 
 export async function fetchDokkaPackageSymbols(packageName: string, platform?: DokkaPlatform): Promise<DokkaSymbol[]> {
-  const packages = await fetchDokkaPackages(platform);
+  const packages = await fetchDokkaPackages();
   const pkg = packages.find((item) => item.name === packageName);
   if (!pkg) {
     throw new Error(`Package "${packageName}" not found in Dokka index`);
@@ -761,9 +769,9 @@ export async function searchDokka(query: string, limit: number = 20): Promise<
   return results.slice(0, limit);
 }
 
-export async function fetchDokkaPackages(platform?: DokkaPlatform): Promise<Array<{ name: string; url: string; platform?: string }>> {
+export async function fetchDokkaPackages(): Promise<Array<{ name: string; url: string; platform?: string }>> {
   const indexUrl = dokkaIndexUrl();
-  const key = `dokkaPackages@${indexUrl}@${platform || "all"}`;
+  const key = `dokkaPackages@${indexUrl}`;
   return cached<Array<{ name: string; url: string; platform?: string }>>(key, 6 * 60 * 60 * 1000, async () => {
     const response = await fetch(indexUrl);
     if (!response.ok) {
@@ -795,7 +803,7 @@ export async function fetchDokkaPackages(platform?: DokkaPlatform): Promise<Arra
 }
 
 export async function fetchDokkaPackageItems(packageName: string, platform?: DokkaPlatform): Promise<DokkaSymbol[]> {
-  const packages = await fetchDokkaPackages(platform);
+  const packages = await fetchDokkaPackages();
   const pkg = packages.find((item) => item.name === packageName);
   if (!pkg) {
     throw new Error(`Package "${packageName}" not found in Dokka index`);
