@@ -671,6 +671,11 @@ export async function fetchDokkaPackageSymbols(packageName: string, platform?: D
   });
 }
 
+// Package URLs have the shape "<docs>/dokka/<module>/<package>/index.html".
+function dokkaModuleFromUrl(url: string): string {
+  return /\/dokka\/([^/]+)\//.exec(url)?.[1] ?? "miuix-ui";
+}
+
 export async function searchDokka(query: string, limit: number = 20): Promise<
   Array<{ type: "package" | "symbol"; module: string; package?: string; name: string; url: string; kind?: string }>
 > {
@@ -687,7 +692,7 @@ export async function searchDokka(query: string, limit: number = 20): Promise<
   for (const item of packageMatches) {
     results.push({
       type: "package",
-      module: "miuix",
+      module: dokkaModuleFromUrl(item.url),
       package: item.name,
       name: item.name,
       url: item.url,
@@ -714,7 +719,7 @@ export async function searchDokka(query: string, limit: number = 20): Promise<
       if (symbolName.includes(normalizedQuery) || compactSymbolName.includes(noSpaceQuery)) {
         results.push({
           type: "symbol",
-          module: "miuix",
+          module: dokkaModuleFromUrl(pkg.url),
           package: pkg.name,
           name: symbol.name,
           url: symbol.url,
@@ -736,7 +741,7 @@ export async function searchDokka(query: string, limit: number = 20): Promise<
         if (symbol.name.toLowerCase().includes(normalizedQuery)) {
           results.push({
             type: "symbol",
-            module: "miuix",
+            module: dokkaModuleFromUrl(pkg.url),
             package: pkg.name,
             name: symbol.name,
             url: symbol.url,
