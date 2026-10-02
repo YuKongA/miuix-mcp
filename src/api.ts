@@ -484,16 +484,18 @@ function extractSignatureParams(signature: string, symbolName: string): Array<{ 
   return params;
 }
 
-// Dokka tags rows with comma-separated source sets (e.g. ":miuix-ui/commonMain,:miuix-ui/androidMain");
-// suffix-match so both the legacy ":miuix/..." and the current ":miuix-ui/..." module prefixes work.
+// Dokka tags rows with comma-separated source sets (e.g. ":miuix-ui/commonMain,:miuix-ui/androidMain").
+// Each platform lists its declared source set plus its ancestors up to commonMain
+// (upstream MiuixSourceSetHierarchy), so a "platform" filter answers "what exists on this
+// platform". Suffix-match keeps both the legacy ":miuix/..." and the current ":miuix-ui/..." prefixes working.
 const DOKKA_PLATFORM_SOURCE_SETS: Record<DokkaPlatform, string[]> = {
   common: ["commonMain"],
-  android: ["androidMain"],
-  desktop: ["desktopMain", "skikoMain"],
-  ios: ["iosMain", "skikoMain"],
-  js: ["jsMain", "skikoMain"],
-  macos: ["macosMain", "skikoMain"],
-  wasmJs: ["wasmJsMain", "skikoMain"],
+  android: ["commonMain", "androidMain"],
+  desktop: ["commonMain", "skikoMain", "desktopMain"],
+  ios: ["commonMain", "skikoMain", "darwinMain", "iosMain"],
+  js: ["commonMain", "skikoMain", "webMain", "jsMain"],
+  macos: ["commonMain", "skikoMain", "darwinMain", "macosMain"],
+  wasmJs: ["commonMain", "skikoMain", "webMain", "wasmJsMain"],
 };
 
 function matchesDokkaPlatform(tag: string, platform: DokkaPlatform): boolean {
@@ -508,7 +510,7 @@ export async function fetchDokkaPackageSymbols(packageName: string, platform?: D
     throw new Error(`Package "${packageName}" not found in Dokka index`);
   }
 
-  const key = `dokkaPackageSymbols@${pkg.url}@${platform || "all"}@v2`;
+  const key = `dokkaPackageSymbols@${pkg.url}@${platform || "all"}@v3`;
   return cached<DokkaSymbol[]>(key, 6 * 60 * 60 * 1000, async () => {
     const response = await fetch(pkg.url);
     if (!response.ok) {
