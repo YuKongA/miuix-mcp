@@ -47,7 +47,7 @@
 ### 基础与版本
 
 - `get_latest_version` 获取 miuix 库最新发布版本（GitHub Releases）
-- `get_gradle_dependency` 获取 Gradle 依赖配置代码片段（支持 `miuix`、`miuix-icons`、`miuix-navigation3-ui` 以及 KMP、Android 和其他单平台）
+- `get_gradle_dependency` 获取 Gradle 依赖配置代码片段（支持 `miuix-ui`、`miuix-preference`、`miuix-icons`、`miuix-blur`、`miuix-squircle`、`miuix-nav` 以及 KMP、Android 和其他单平台）
 
 ### 组件文档与示例
 
@@ -66,9 +66,11 @@
 - `get_text_styles_doc` 获取“文本样式”指南
 - `get_icons_doc` 获取“图标”指南
 - `get_utils_doc` 获取“工具类”指南
-- `get_navigation3_doc` 获取“Navigation3 支持”指南
+- `get_miuix_nav_doc` 获取“miuix-nav 导航”指南
 - `get_multiplatform_doc` 获取“多平台支持”指南
 - `get_best_practices_doc` 获取“最佳实践”指南
+- `get_blur_doc` 获取“模糊效果”指南
+- `get_squircle_doc` 获取“平滑圆角”指南
 
 ### API 参考 (Dokka)
 

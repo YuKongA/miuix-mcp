@@ -376,8 +376,8 @@ export async function fetchUtilsGuide(locale?: string): Promise<string> {
   return await fetchGuideDoc("utils", locale);
 }
 
-export async function fetchNavigation3Guide(locale?: string): Promise<string> {
-  return await fetchGuideDoc("navigation3", locale);
+export async function fetchMiuixNavGuide(locale?: string): Promise<string> {
+  return await fetchGuideDoc("miuix-nav", locale);
 }
 
 export async function fetchMultiplatformGuide(locale?: string): Promise<string> {
@@ -386,6 +386,14 @@ export async function fetchMultiplatformGuide(locale?: string): Promise<string> 
 
 export async function fetchBestPracticesGuide(locale?: string): Promise<string> {
   return await fetchGuideDoc("best-practices", locale);
+}
+
+export async function fetchBlurGuide(locale?: string): Promise<string> {
+  return await fetchGuideDoc("blur", locale);
+}
+
+export async function fetchSquircleGuide(locale?: string): Promise<string> {
+  return await fetchGuideDoc("squircle", locale);
 }
 
 function dokkaIndexUrl(): string {
@@ -476,14 +484,33 @@ function extractSignatureParams(signature: string, symbolName: string): Array<{ 
   return params;
 }
 
+// Dokka tags rows with comma-separated source sets (e.g. ":miuix-ui/commonMain,:miuix-ui/androidMain").
+// Each platform lists its declared source set plus its ancestors up to commonMain
+// (upstream MiuixSourceSetHierarchy), so a "platform" filter answers "what exists on this
+// platform". Suffix-match keeps both the legacy ":miuix/..." and the current ":miuix-ui/..." prefixes working.
+const DOKKA_PLATFORM_SOURCE_SETS: Record<DokkaPlatform, string[]> = {
+  common: ["commonMain"],
+  android: ["commonMain", "androidMain"],
+  desktop: ["commonMain", "skikoMain", "desktopMain"],
+  ios: ["commonMain", "skikoMain", "darwinMain", "iosMain"],
+  js: ["commonMain", "skikoMain", "webMain", "jsMain"],
+  macos: ["commonMain", "skikoMain", "darwinMain", "macosMain"],
+  wasmJs: ["commonMain", "skikoMain", "webMain", "wasmJsMain"],
+};
+
+function matchesDokkaPlatform(tag: string, platform: DokkaPlatform): boolean {
+  const sourceSets = DOKKA_PLATFORM_SOURCE_SETS[platform];
+  return tag.split(",").some((entry) => sourceSets.some((sourceSet) => entry.trim().endsWith(`/${sourceSet}`)));
+}
+
 export async function fetchDokkaPackageSymbols(packageName: string, platform?: DokkaPlatform): Promise<DokkaSymbol[]> {
-  const packages = await fetchDokkaPackages(platform);
+  const packages = await fetchDokkaPackages();
   const pkg = packages.find((item) => item.name === packageName);
   if (!pkg) {
     throw new Error(`Package "${packageName}" not found in Dokka index`);
   }
 
-  const key = `dokkaPackageSymbols@${pkg.url}@${platform || "all"}`;
+  const key = `dokkaPackageSymbols@${pkg.url}@${platform || "all"}@v3`;
   return cached<DokkaSymbol[]>(key, 6 * 60 * 60 * 1000, async () => {
     const response = await fetch(pkg.url);
     if (!response.ok) {
@@ -491,16 +518,6 @@ export async function fetchDokkaPackageSymbols(packageName: string, platform?: D
     }
 
     const html = await response.text();
-    const platformMap: Record<DokkaPlatform, string> = {
-      common: ":miuix/commonMain",
-      android: ":miuix/androidMain",
-      desktop: ":miuix/desktopMain",
-      ios: ":miuix/iosMain",
-      js: ":miuix/jsMain",
-      macos: ":miuix/macosMain",
-      wasmJs: ":miuix/wasmJsMain",
-    };
-    const platformFilter = platform ? platformMap[platform] : undefined;
     const results: DokkaSymbol[] = [];
 
     const getSectionTable = (name: "TYPE" | "PROPERTY" | "FUNCTION"): string => {
@@ -570,7 +587,7 @@ export async function fetchDokkaPackageSymbols(packageName: string, platform?: D
           || /data-togglable="([^"]+)"/.exec(windowHtml);
         const platformTag = platformTagMatch?.[1] ?? "";
 
-        if (platformFilter && platformTag && platformTag !== platformFilter) {
+        if (platform && platformTag && !matchesDokkaPlatform(platformTag, platform)) {
           continue;
         }
 
@@ -646,7 +663,7 @@ export async function fetchDokkaPackageSymbols(packageName: string, platform?: D
           || /data-filterable-set="([^"]+)"/.exec(windowHtml)
           || /data-togglable="([^"]+)"/.exec(windowHtml);
         const platformTag = platformTagMatch?.[1] ?? "";
-        if (platformFilter && platformTag && platformTag !== platformFilter) continue;
+        if (platform && platformTag && !matchesDokkaPlatform(platformTag, platform)) continue;
 
         const url = href.startsWith("http")
           ? href
@@ -662,6 +679,11 @@ export async function fetchDokkaPackageSymbols(packageName: string, platform?: D
 
     return results;
   });
+}
+
+// Package URLs have the shape "<docs>/dokka/<module>/<package>/index.html".
+function dokkaModuleFromUrl(url: string): string {
+  return /\/dokka\/([^/]+)\//.exec(url)?.[1] ?? "miuix-ui";
 }
 
 export async function searchDokka(query: string, limit: number = 20): Promise<
@@ -680,7 +702,7 @@ export async function searchDokka(query: string, limit: number = 20): Promise<
   for (const item of packageMatches) {
     results.push({
       type: "package",
-      module: "miuix",
+      module: dokkaModuleFromUrl(item.url),
       package: item.name,
       name: item.name,
       url: item.url,
@@ -707,7 +729,7 @@ export async function searchDokka(query: string, limit: number = 20): Promise<
       if (symbolName.includes(normalizedQuery) || compactSymbolName.includes(noSpaceQuery)) {
         results.push({
           type: "symbol",
-          module: "miuix",
+          module: dokkaModuleFromUrl(pkg.url),
           package: pkg.name,
           name: symbol.name,
           url: symbol.url,
@@ -729,7 +751,7 @@ export async function searchDokka(query: string, limit: number = 20): Promise<
         if (symbol.name.toLowerCase().includes(normalizedQuery)) {
           results.push({
             type: "symbol",
-            module: "miuix",
+            module: dokkaModuleFromUrl(pkg.url),
             package: pkg.name,
             name: symbol.name,
             url: symbol.url,
@@ -749,9 +771,9 @@ export async function searchDokka(query: string, limit: number = 20): Promise<
   return results.slice(0, limit);
 }
 
-export async function fetchDokkaPackages(platform?: DokkaPlatform): Promise<Array<{ name: string; url: string; platform?: string }>> {
+export async function fetchDokkaPackages(): Promise<Array<{ name: string; url: string; platform?: string }>> {
   const indexUrl = dokkaIndexUrl();
-  const key = `dokkaPackages@${indexUrl}@${platform || "all"}`;
+  const key = `dokkaPackages@${indexUrl}`;
   return cached<Array<{ name: string; url: string; platform?: string }>>(key, 6 * 60 * 60 * 1000, async () => {
     const response = await fetch(indexUrl);
     if (!response.ok) {
@@ -761,7 +783,7 @@ export async function fetchDokkaPackages(platform?: DokkaPlatform): Promise<Arra
     const html = await response.text();
     const base = dokkaBase().replace(/\/+$/, "");
     const results: Array<{ name: string; url: string; platform?: string }> = [];
-    const anchorRegex = /<a href="(miuix\/top\.yukonga\.miuix\.kmp\.[^"]+\/index\.html)">([^<]+)<\/a>/g;
+    const anchorRegex = /<a href="((?:miuix|miuix-ui)\/top\.yukonga\.miuix\.kmp\.[^"]+\/index\.html)">([^<]+)<\/a>/g;
     let match: RegExpExecArray | null;
     while ((match = anchorRegex.exec(html)) !== null) {
       const href = match[1] || "";
@@ -783,7 +805,7 @@ export async function fetchDokkaPackages(platform?: DokkaPlatform): Promise<Arra
 }
 
 export async function fetchDokkaPackageItems(packageName: string, platform?: DokkaPlatform): Promise<DokkaSymbol[]> {
-  const packages = await fetchDokkaPackages(platform);
+  const packages = await fetchDokkaPackages();
   const pkg = packages.find((item) => item.name === packageName);
   if (!pkg) {
     throw new Error(`Package "${packageName}" not found in Dokka index`);
@@ -796,7 +818,7 @@ export async function fetchDokkaClassMembers(typeUrl: string, platform?: DokkaPl
   functions: Array<{ name: string; url: string; platform?: string; signature?: string; params?: Array<{ name: string; type: string; default?: string }> }>;
   properties: Array<{ name: string; url: string; platform?: string; signature?: string }>;
 }> {
-  const key = `dokkaClassMembers@${typeUrl}@${platform || "all"}@v3`;
+  const key = `dokkaClassMembers@${typeUrl}@${platform || "all"}@v4`;
   return cached(key, 6 * 60 * 60 * 1000, async () => {
     const response = await fetch(typeUrl);
     if (!response.ok) {
@@ -807,16 +829,6 @@ export async function fetchDokkaClassMembers(typeUrl: string, platform?: DokkaPl
     }
 
     const html = await response.text();
-    const platformMap: Record<DokkaPlatform, string> = {
-      common: ":miuix/commonMain",
-      android: ":miuix/androidMain",
-      desktop: ":miuix/desktopMain",
-      ios: ":miuix/iosMain",
-      js: ":miuix/jsMain",
-      macos: ":miuix/macosMain",
-      wasmJs: ":miuix/wasmJsMain",
-    };
-    const platformFilter = platform ? platformMap[platform] : undefined;
     const constructors: Array<{ name: string; url: string; platform?: string; signature?: string; params?: Array<{ name: string; type: string; default?: string }> }> = [];
     const functions: Array<{ name: string; url: string; platform?: string; signature?: string; params?: Array<{ name: string; type: string; default?: string }> }> = [];
     const properties: Array<{ name: string; url: string; platform?: string; signature?: string }> = [];
@@ -847,7 +859,7 @@ export async function fetchDokkaClassMembers(typeUrl: string, platform?: DokkaPl
         || /data-filterable-set="([^"]+)"/.exec(windowHtml)
         || /data-togglable="([^"]+)"/.exec(windowHtml);
       const platformTag = platformTagMatch?.[1] ?? "";
-      if (platformFilter && platformTag && platformTag !== platformFilter) continue;
+      if (platform && platformTag && !matchesDokkaPlatform(platformTag, platform)) continue;
 
       const url = href.startsWith("http") ? href : new URL(href, typeUrl).toString();
 
